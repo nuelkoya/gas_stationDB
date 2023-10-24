@@ -1,0 +1,103 @@
+1.0  Queries to run against database
+
+--------------------------------------------------------------------------
+
+2.0  Products available at gas station
+
+SELECT * FROM product;
+
+--------------------------------------------------------------------------
+
+3.0 All sales at the gas station for the day
+
+SELECT * FROM sale;
+
+--------------------------------------------------------------------------
+
+4.0 Total amount of product sold for the day(revenue)
+
+SELECT SUM(total)
+FROM sale;
+
+--------------------------------------------------------------------------
+
+5.0 Total amount of gas product sold including diesel
+
+SELECT SUM(total)
+FROM sale
+WHERE product_id = 1
+OR product_id = 2
+OR product_id = 3
+OR product_id = 4;
+
+---------------------------------------------------------------------------
+
+6.0 Total amount of air water sold
+
+SELECT SUM(total)
+FROM sale 
+WHERE product_id = 5;
+
+
+---------------------------------------------------------------------------
+
+7.0 Total amount of car wash product/service sold
+
+SELECT SUM(total)
+FROM sale
+WHERE product_id = 6
+OR product_id = 7
+OR product_id = 8;
+
+
+---------------------------------------------------------------------------
+
+8.0  Gallons of gas sold for each product where payment method is cash
+
+
+SELECT ((SUM(sale.total)) / product.price_cash) as gallons_sold, sale.product_name, product.id
+FROM sale
+JOIN product
+ON sale.product_id = product.id
+WHERE sale.payment_method = 'cash' AND sale.product_id = 1 
+OR sale.payment_method = 'cash' AND sale.product_id = 2
+OR sale.payment_method = 'cash' AND sale.product_id = 3
+OR sale.payment_method = 'cash' AND sale.product_id = 4
+GROUP BY product.price_cash, sale.product_name, product.id
+ORDER BY product.id;
+
+---------------------------------------------------------------------------
+
+9.0 Gallons of gas sold for each product where payment method is card
+
+SELECT SUM(sale.total)/product.price_card AS gallons_sold, product.id, product.name
+FROM sale
+JOIN product
+ON sale.product_id = product.id
+WHERE sale.product_id = 1 AND payment_method = 'card'
+OR sale.product_id = 2 AND payment_method = 'card'
+OR sale.product_id = 3 AND payment_method = 'card'
+OR sale.product_id = 4 AND payment_method = 'card'
+GROUP BY product.price_card, 2, 3
+ORDER BY product.id;
+
+-----------------------------------------------------------------------------
+
+10.0 Gallons of gas sold for each product where payment method is either cash or card
+
+SELECT product.id,
+	CASE
+		WHEN sale.payment_method = 'cash'
+			THEN SUM(sale.total) / product.price_cash
+		WHEN sale.payment_method = 'card'
+			THEN SUM(sale.total) / product.price_card
+	END AS Gallons_sold, product.name, sale.payment_method
+FROM sale
+JOIN product
+ON sale.product_id = product.id
+WHERE sale.product_id = 1
+OR sale.product_id = 2
+OR sale.product_id = 3
+OR sale.product_id = 4
+GROUP BY product.id, sale.payment_method, product.price_cash, product.price_card, product.name, sale.payment_method
+ORDER BY 1; 
